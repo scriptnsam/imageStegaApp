@@ -2,13 +2,16 @@ import { StyleSheet } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
+import { useAppContext } from '@/components/AppContext';
 
-export default function TabThreeScreen() {
+export default function TabOneScreen() {
+  const { isReady } = useAppContext()
+  console.log("iS READY:", isReady)
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Tab Three</Text>
+      <Text style={styles.title}>Home</Text>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/three.tsx" />
+      <EditScreenInfo path="app/(tabs)/index.tsx" />
     </View>
   );
 }

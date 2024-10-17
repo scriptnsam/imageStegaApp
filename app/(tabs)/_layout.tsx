@@ -28,23 +28,23 @@ export default function TabLayout() {
         headerShown: false,
       }}>
       <Tabs.Screen
-        name="index"
+        name="home"
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => <TabBarIcon name='home' color={color} />
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="encrypt"
         options={{
-          title: 'Area',
+          title: 'Encrypt',
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="decrypt"
         options={{
-          title: 'Settings',
+          title: 'Decrypt',
           tabBarIcon: ({ color }) => <TabBarIcon name="gear" color={color} />,
         }}
       />

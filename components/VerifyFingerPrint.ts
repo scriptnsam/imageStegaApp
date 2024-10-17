@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 
 export const authenticate = async (navigation: any, setIsReady: (ready: boolean) => void) => {
   const fallback = () => {
-    navigation.navigate('WelcomeScreen', { screen: 'WelcomeScreen' });
+    navigation.navigate('index', { screen: 'index' });
   }
   try {
     const hasHardware = await LocalAuthentication.hasHardwareAsync();
