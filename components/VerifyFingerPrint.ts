@@ -30,7 +30,7 @@ export const authenticate = async (navigation: any, setIsReady: (ready: boolean)
 
       // Delay navigation after success
       setTimeout(() => {
-        navigation.replace('(tabs)');
+        navigation.navigate('(tabs)', { screen: '(tabs)' });
       }, 1000);
     } else {
       if (result.error === 'user_cancel' || result.error === 'user_fallback') {
