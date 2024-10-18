@@ -1,4 +1,4 @@
-import { StyleSheet, Alert, ScrollView, Image, Pressable } from 'react-native';
+import { StyleSheet, Alert, ScrollView, Image, Pressable, TextInput } from 'react-native';
 import { useState } from 'react';
 import { View, Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -9,9 +9,9 @@ import { useAppContext } from '@/components/AppContext';
 
 const EncryptTab = () => {
   const [selectedImage, setSelectedImage] = useState('');
-  const [message, setMessage] = useState('');
   const navigation = useNavigation()
   const { setIsImagePickerActive } = useAppContext()
+  const [inputValue, setInputValue] = useState('')
 
   const handleImageUpload = async () => {
     // Logic for selecting an image
@@ -38,7 +38,6 @@ const EncryptTab = () => {
     setIsImagePickerActive(false)
 
     if (!result.canceled) {
-      console.log(result.assets[0].uri)
       // set the image state
       setSelectedImage(result.assets[0].uri);
     }
@@ -46,7 +45,7 @@ const EncryptTab = () => {
 
   const handleEncrypt = () => {
     // Logic for encrypting the image
-    if (!selectedImage || !message) {
+    if (!selectedImage || !inputValue) {
       Alert.alert('Error', 'Please select an image and enter a message.');
       return;
     }
@@ -84,6 +83,27 @@ const EncryptTab = () => {
         >
           <View style={styles.uploadBtn}>
             <Text style={{ fontFamily: 'InclusiveSans', fontSize: 20, color: Colors.secondary }}>Upload Image</Text>
+          </View>
+        </Pressable>
+
+        {/* Text input filed */}
+        <View>
+          <TextInput
+            style={styles.input}
+            value={inputValue}
+            onChangeText={(text) => setInputValue(text)} // Updates state when input changes
+            placeholder="Input text to encrypt..."
+            placeholderTextColor={'#aaa'}
+            multiline={true}
+            numberOfLines={4}
+          />
+        </View>
+
+        <Pressable
+          onPress={handleEncrypt}
+        >
+          <View style={styles.verify_btn}>
+            <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>Encrypt</Text>
           </View>
         </Pressable>
       </ScrollView>
@@ -127,6 +147,37 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: Colors.primary,
     borderRadius: 2,
+  },
+  input: {
+    height: 93,
+    width: 300,
+    alignSelf: 'center',
+    marginTop: 80,
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: Colors.primary,
+    fontFamily: 'InclusiveSans',
+    fontSize: 15,
+    padding: 2,
+    color: Colors.primary,
+    backgroundColor: Colors.secondary
+  },
+  output: {
+    fontSize: 20,
+    margin: 12,
+    color: Colors.primary
+  },
+  verify_btn: {
+    alignSelf: 'center',
+    marginTop: 50,
+    backgroundColor: Colors.primary,
+    padding: 5,
+    borderRadius: 15,
+    alignItems: 'center',
+    justifyContent: 'center', // Align text in the center of the button
+    width: 254,
+    height: 53,
+    opacity: 1
   }
 });
 
