@@ -1,4 +1,3 @@
-// AppContext.tsx or AppProvider.tsx
 import React, { createContext, useContext, useState, ReactNode, useRef, useEffect } from 'react';
 import { AppState, AppStateStatus } from 'react-native';
 import { authenticate } from './VerifyFingerPrint';
@@ -7,27 +6,37 @@ import { useNavigation } from 'expo-router';
 interface AppContextProps {
   isReady: boolean;
   setIsReady: (ready: boolean) => void;
+  isImagePickerActive: boolean; // Add this to track image picker state
+  setIsImagePickerActive: (active: boolean) => void; // Function to update it
 }
 
 const AppContext = createContext<AppContextProps | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isReady, setIsReady] = useState(false);
-  const appState = useRef(AppState.currentState)
+  const [isImagePickerActive, setIsImagePickerActive] = useState(false);
+  const appState = useRef(AppState.currentState);
   const navigation = useNavigation();
+  const lastImagePickerActive = useRef(false); // Ref to track last image picker state
 
   // Listen for AppState changes
   const handleAppStateChange = (nextAppState: AppStateStatus) => {
     if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-      console.log("isReady: ", isReady)
-      authenticate(navigation, setIsReady); // Trigger authentication when app comes back to the foreground
+      // Only authenticate if the last state was active
+      if (lastImagePickerActive.current) {
+        console.log("Image picker was active previously, skipping authentication.");
+      } else {
+        console.log("isReady: ", isReady);
+        authenticate(navigation, setIsReady); // Trigger authentication
+      }
     }
     appState.current = nextAppState;
   };
 
   useEffect(() => {
-    console.log("isReady: ", isReady)
-  }, [isReady])
+    // Update the ref whenever isImagePickerActive changes
+    lastImagePickerActive.current = isImagePickerActive;
+  }, [isImagePickerActive]);
 
   useEffect(() => {
     // Add listener for app state changes
@@ -40,7 +49,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   }, []);
 
   return (
-    <AppContext.Provider value={{ isReady, setIsReady }}>
+    <AppContext.Provider value={{ isReady, setIsReady, isImagePickerActive, setIsImagePickerActive }}>
       {children}
     </AppContext.Provider>
   );
