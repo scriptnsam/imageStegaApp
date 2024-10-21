@@ -6,6 +6,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAppContext } from '@/components/AppContext';
+import { ScreenHeader } from '@/components/ScreenHeader';
+import { ScreenWrapper } from '@/components/ScreenWrapper';
 
 const EncryptTab = () => {
   const [selectedImage, setSelectedImage] = useState('');
@@ -57,57 +59,48 @@ const EncryptTab = () => {
     : require('@/assets/images/dummy_image.png');
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {/* header */}
-        <View style={styles.header}>
-          <Pressable
-            onPress={() => navigation.goBack()}
-          >
-            <Image style={styles.back} source={require('@/assets/images/Back.png')} />
-          </Pressable>
-          <Text style={{ fontFamily: 'InclusiveSans', fontSize: 24, color: Colors.primary }}>Encrypt Image</Text>
+    <ScreenWrapper styles={styles.container}>
+      {/* header */}
+      <ScreenHeader name='Encrypt Image' />
+
+      {/* Image section */}
+      <Pressable
+        onPress={handleImageUpload}
+      >
+        <View style={styles.imageUpload}>
+          <Image source={imageSource} style={{ width: selectedImage !== '' ? 150 : 100, height: selectedImage !== '' ? 150 : 100 }} />
         </View>
+      </Pressable>
 
-        {/* Image section */}
-        <Pressable
-          onPress={handleImageUpload}
-        >
-          <View style={styles.imageUpload}>
-            <Image source={imageSource} style={{ width: selectedImage !== '' ? 150 : 100, height: selectedImage !== '' ? 150 : 100 }} />
-          </View>
-        </Pressable>
-
-        <Pressable
-          onPress={handleImageUpload}
-        >
-          <View style={styles.uploadBtn}>
-            <Text style={{ fontFamily: 'InclusiveSans', fontSize: 20, color: Colors.secondary }}>Upload Image</Text>
-          </View>
-        </Pressable>
-
-        {/* Text input filed */}
-        <View>
-          <TextInput
-            style={styles.input}
-            value={inputValue}
-            onChangeText={(text) => setInputValue(text)} // Updates state when input changes
-            placeholder="Input text to encrypt..."
-            placeholderTextColor={'#aaa'}
-            multiline={true}
-            numberOfLines={4}
-          />
+      <Pressable
+        onPress={handleImageUpload}
+      >
+        <View style={styles.uploadBtn}>
+          <Text style={{ fontFamily: 'InclusiveSans', fontSize: 20, color: Colors.secondary }}>Upload Image</Text>
         </View>
+      </Pressable>
 
-        <Pressable
-          onPress={handleEncrypt}
-        >
-          <View style={styles.verify_btn}>
-            <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>Encrypt</Text>
-          </View>
-        </Pressable>
-      </ScrollView>
-    </SafeAreaView>
+      {/* Text input filed */}
+      <View>
+        <TextInput
+          style={styles.input}
+          value={inputValue}
+          onChangeText={(text) => setInputValue(text)} // Updates state when input changes
+          placeholder="Input text to encrypt..."
+          placeholderTextColor={'#aaa'}
+          multiline={true}
+          numberOfLines={4}
+        />
+      </View>
+
+      <Pressable
+        onPress={handleEncrypt}
+      >
+        <View style={styles.verify_btn}>
+          <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>Encrypt</Text>
+        </View>
+      </Pressable>
+    </ScreenWrapper>
   );
 };
 
@@ -115,17 +108,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light.background
-  },
-  back: {
-    width: 50,
-    height: 50,
-  },
-  header: {
-    marginTop: 30,
-    display: 'flex',
-    alignItems: 'center',
-    flexDirection: 'row',
-    marginHorizontal: 10
   },
   imageUpload: {
     width: 170,

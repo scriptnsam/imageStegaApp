@@ -1,31 +1,23 @@
-import { StyleSheet } from 'react-native';
+import { ScreenHeader } from "@/components/ScreenHeader"
+import { Text, View } from "@/components/Themed"
+import { ScrollView, StyleSheet } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+export default function DecryptScreen() {
 
-export default function TabThreeScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Decrypt</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/decrypt.tsx" />
-    </View>
-  );
-}
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        {/* Header */}
+        <ScreenHeader name="Decrypt Image" />
+      </ScrollView>
+    </SafeAreaView>
+  )
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+    backgroundColor: '#fff'
+  }
+})

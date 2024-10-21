@@ -104,6 +104,7 @@ export default function HomeScreen() {
         </Pressable>
 
         <Pressable
+          onPress={() => navigation.navigate('decrypt')}
           onPressIn={onPressIn2}
           onPressOut={onPressOut2}
         >
