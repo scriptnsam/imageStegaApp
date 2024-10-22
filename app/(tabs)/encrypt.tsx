@@ -1,19 +1,37 @@
-import { StyleSheet, Alert, ScrollView, Image, Pressable, TextInput } from 'react-native';
-import { useState } from 'react';
+import { StyleSheet, Alert, ScrollView, Image, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { useEffect, useState } from 'react';
 import { View, Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAppContext } from '@/components/AppContext';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ScreenWrapper } from '@/components/ScreenWrapper';
+import { useNavigation } from 'expo-router';
+import { NavigationProp } from '@react-navigation/native';
+import useRequest from '@/hooks/useRequest';
+import { BACKEND_URL } from "@env"
+
+type Base64Prop = string | null | undefined
+
+type RootStackParamList = {
+  library: undefined; // Screen with no params
+  decrypt: undefined; // Screen with no params
+  home: undefined; // Screen with no params
+  // Add other routes as needed
+};
+
+type Props = {
+  navigation: NavigationProp<RootStackParamList>;
+};
 
 const EncryptTab = () => {
   const [selectedImage, setSelectedImage] = useState('');
-  const navigation = useNavigation()
+  const [imageBase64, setImageBase64] = useState<Base64Prop>('');
   const { setIsImagePickerActive } = useAppContext()
   const [inputValue, setInputValue] = useState('')
+  const { data, error, loading, request } = useRequest()
+
+  const navigation = useNavigation<Props['navigation']>()
 
   const handleImageUpload = async () => {
     // Logic for selecting an image
@@ -34,6 +52,7 @@ const EncryptTab = () => {
       allowsEditing: true,
       // aspect: [1, 1],
       quality: 1,
+      base64: true
     });
 
     // set image picker state to false
@@ -41,17 +60,47 @@ const EncryptTab = () => {
 
     if (!result.canceled) {
       // set the image state
+      setImageBase64(result.assets[0].base64);
       setSelectedImage(result.assets[0].uri);
     }
   };
 
-  const handleEncrypt = () => {
+  const handleEncrypt = async () => {
     // Logic for encrypting the image
-    if (!selectedImage || !inputValue) {
+    if (imageBase64 === '' || inputValue === '') {
       Alert.alert('Error', 'Please select an image and enter a message.');
       return;
     }
     // Proceed with encryption
+    const payload = {
+      image: imageBase64,
+      message: inputValue
+    }
+
+    await request(`${BACKEND_URL}/encode`, 'POST', payload)
+
+
+    if (error) {
+      console.log(error)
+      Alert.alert('Error', 'Something went wrong. Please try again.');
+      return;
+    }
+    if (loading) {
+      Alert.alert('Loading', 'Please wait...');
+      return;
+    }
+    if (data) {
+      Alert.alert('Encryption successful!', 'The image has been encrypted.', [
+        {
+          text: 'Great!', onPress: () => {
+            setImageBase64('')
+            setSelectedImage('')
+            setInputValue('')
+          }
+        }
+      ], { cancelable: false });
+    }
+
   };
 
   const imageSource = selectedImage && selectedImage !== ''
@@ -94,10 +143,10 @@ const EncryptTab = () => {
       </View>
 
       <Pressable
-        onPress={handleEncrypt}
+        onPress={loading ? () => { } : handleEncrypt}
       >
         <View style={styles.verify_btn}>
-          <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>Encrypt</Text>
+          <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>{!loading ? 'Encrypt' : <ActivityIndicator size={16} />}</Text>
         </View>
       </Pressable>
     </ScreenWrapper>
