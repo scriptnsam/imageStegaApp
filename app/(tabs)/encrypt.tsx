@@ -126,13 +126,13 @@ const EncryptTab = () => {
       </Pressable>
 
       <Pressable onPress={handleImageUpload}>
-        <View className="self-center mt-8 w-48 h-12 border border-primary items-center justify-center bg-primary rounded-md">
-          <Text className="font-inclusiveSans text-lg text-secondary">Upload Image</Text>
+        <View className="self-center mt-8 w-48 h-12 border border-primary items-center justify-center bg-light-cardBackground rounded-md">
+          <Text className="font-inclusiveSans text-lg text-primary">Upload Image</Text>
         </View>
       </Pressable>
 
       {/* Text input field */}
-      <View>
+      <View className='bg-transparent'>
         <TextInput
           className="h-24 w-72 self-center mt-20 border border-primary rounded-md text-primary font-inclusiveSans text-base p-2 bg-secondary"
           value={inputValue}
@@ -144,13 +144,14 @@ const EncryptTab = () => {
         />
       </View>
 
-      <Pressable onPress={loading ? () => { } : handleEncrypt}>
-        <View className="self-center mt-12 bg-primary p-2 rounded-3xl items-center justify-center w-64 h-14 opacity-1">
-          <Text className="text-secondary text-lg font-inclusiveSans">
+      <Pressable className='bg-transparent' onPress={loading ? () => { } : handleEncrypt}>
+        <View className="self-center mt-12 bg-light-cardBackground mb-12 border border-primary p-2 rounded-3xl items-center justify-center w-64 h-14 opacity-1">
+          <Text className="text-primary text-lg font-inclusiveSans">
             {!loading ? 'Encrypt' : <ActivityIndicator size={16} />}
           </Text>
         </View>
       </Pressable>
+
     </ScreenWrapper>
   );
 };
