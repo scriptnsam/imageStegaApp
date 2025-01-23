@@ -73,7 +73,7 @@ export default function HomeScreen() {
 
       {/* Recent Activity */}
       <Text className="text-xl font-semibold text-center text-light-text mt-8">Recent Activity</Text>
-      <View className="bg-light-cardBackground rounded-xl p-4 my-4 shadow-lg w-3/4 m-auto mt-3">
+      <View className="bg-[#fed7aa] rounded-xl p-4 my-4 shadow-lg w-3/4 m-auto mt-3">
         <Text className="text-lg text-center text-light-text">No recent activity yet. Start encrypting or decrypting images!</Text>
       </View>
 
@@ -96,7 +96,7 @@ export default function HomeScreen() {
 
       {/* Tips Section */}
       <Text className="text-xl font-semibold text-center text-light-text mt-8">Tips</Text>
-      <View className="bg-light-cardBackground rounded-xl p-4 shadow-lg w-11/12 m-auto my-5">
+      <View className="bg-[#fed7aa] rounded-xl p-4 shadow-lg w-11/12 m-auto my-5">
         <Text className="text-lg text-center text-light-text">
           Did you know? InvisVault secures your data with advanced steganography algorithms!
         </Text>

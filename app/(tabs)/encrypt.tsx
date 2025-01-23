@@ -1,4 +1,4 @@
-import { StyleSheet, Alert, ScrollView, Image, Pressable, TextInput, ActivityIndicator } from 'react-native';
+import { Alert, Image, Pressable, TextInput, ActivityIndicator } from 'react-native';
 import { useEffect, useState } from 'react';
 import { View, Text } from '@/components/Themed';
 import Colors from '@/constants/Colors';
@@ -10,13 +10,12 @@ import { useNavigation } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
 import useRequest from '@/hooks/useRequest';
 
-type Base64Prop = string | null | undefined
+type Base64Prop = string | null | undefined;
 
 type RootStackParamList = {
-  library: undefined; // Screen with no params
-  decrypt: undefined; // Screen with no params
-  home: undefined; // Screen with no params
-  // Add other routes as needed
+  library: undefined;
+  decrypt: undefined;
+  home: undefined;
 };
 
 type Props = {
@@ -26,189 +25,134 @@ type Props = {
 const EncryptTab = () => {
   const [selectedImage, setSelectedImage] = useState('');
   const [imageBase64, setImageBase64] = useState<Base64Prop>('');
-  const { setIsImagePickerActive } = useAppContext()
-  const [inputValue, setInputValue] = useState('')
-  const { data, error, loading, request } = useRequest()
+  const { setIsImagePickerActive, isImagePickerActive } = useAppContext();
+  const [inputValue, setInputValue] = useState('');
+  const { data, error, loading, request } = useRequest();
 
-  const navigation = useNavigation<Props['navigation']>()
+  const navigation = useNavigation<Props['navigation']>();
 
   const handleImageUpload = async () => {
-    // Logic for selecting an image
-    // Request persmission to access image library
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
     if (permissionResult.granted === false) {
       Alert.alert('Permission to access camera roll is required!');
       return;
     }
 
-    // set image picker state to true
-    setIsImagePickerActive(true)
+    // Set image picker active before picking image
+    setIsImagePickerActive(true);
 
-    // Launch the image picker
+    // Wait for the image picker to complete and check the state after setting it
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      // aspect: [1, 1],
       quality: 1,
-      base64: true
+      base64: true,
     });
 
-    // set image picker state to false
-    setIsImagePickerActive(false)
-
+    // If image is selected, update the selected image and base64 data
     if (!result.canceled) {
-      // set the image state
       setImageBase64(result.assets[0].base64);
       setSelectedImage(result.assets[0].uri);
+    } else {
+      // If the picker was cancelled, make sure the authentication doesn't trigger
+      console.log('Image picker was cancelled, authentication will not trigger.');
     }
+
   };
 
+  useEffect(() => {
+    console.log(isImagePickerActive)
+  }, [isImagePickerActive])
+
   const handleEncrypt = async () => {
-    // Logic for encrypting the image
     if (imageBase64 === '' || inputValue === '') {
       Alert.alert('Error', 'Please select an image and enter a message.');
+      setIsImagePickerActive(false)
       return;
     }
-    // Proceed with encryption
+
     const payload = {
       image: imageBase64,
-      message: inputValue
-    }
+      message: inputValue,
+    };
 
-    await request(`${process.env.BACKEND_URL}/encode`, 'POST', payload)
+    try {
+      await request(`${process.env.BACKEND_URL}/encode`, 'POST', payload);
 
+      if (error) {
+        console.log(error);
+        Alert.alert('Error', 'Something went wrong. Please try again.');
+        setIsImagePickerActive(false)
+        return;
+      }
+      if (loading) {
+        Alert.alert('Loading', 'Please wait...');
+        setIsImagePickerActive(false)
+        return;
+      }
+      if (data) {
+        Alert.alert('Encryption successful!', 'The image has been encrypted.', [
+          {
+            text: 'Great!', onPress: () => {
+              setImageBase64('');
+              setSelectedImage('');
+              setInputValue('');
+            },
+          },
+        ], { cancelable: false });
+      }
 
-    if (error) {
-      console.log(error)
-      Alert.alert('Error', 'Something went wrong. Please try again.');
-      return;
-    }
-    if (loading) {
-      Alert.alert('Loading', 'Please wait...');
-      return;
-    }
-    if (data) {
-      Alert.alert('Encryption successful!', 'The image has been encrypted.', [
-        {
-          text: 'Great!', onPress: () => {
-            setImageBase64('')
-            setSelectedImage('')
-            setInputValue('')
-          }
-        }
-      ], { cancelable: false });
+      setIsImagePickerActive(false)
+    } catch (error) {
+      console.error('Error during encryption:', error)
+      setIsImagePickerActive(false)
     }
 
   };
 
   const imageSource = selectedImage && selectedImage !== ''
-    ? { uri: selectedImage } // Use uri for a dynamic image
+    ? { uri: selectedImage }
     : require('@/assets/images/dummy_image.png');
 
   return (
-    <ScreenWrapper styles={styles.container}>
-      {/* header */}
-      <ScreenHeader name='Encrypt Image' />
+    <ScreenWrapper styles={{ backgroundColor: Colors.light.background }}>
+      <ScreenHeader name="Encrypt Image" />
 
       {/* Image section */}
-      <Pressable
-        onPress={handleImageUpload}
-      >
-        <View style={styles.imageUpload}>
-          <Image source={imageSource} style={{ width: selectedImage !== '' ? 150 : 100, height: selectedImage !== '' ? 150 : 100 }} />
+      <Pressable onPress={handleImageUpload}>
+        <View className="w-44 h-44 items-center justify-center self-center mt-12 bg-secondary rounded-md">
+          <Image source={imageSource} className={selectedImage ? 'w-36 h-36' : 'w-24 h-24'} />
         </View>
       </Pressable>
 
-      <Pressable
-        onPress={handleImageUpload}
-      >
-        <View style={styles.uploadBtn}>
-          <Text style={{ fontFamily: 'InclusiveSans', fontSize: 20, color: Colors.secondary }}>Upload Image</Text>
+      <Pressable onPress={handleImageUpload}>
+        <View className="self-center mt-8 w-48 h-12 border border-primary items-center justify-center bg-primary rounded-md">
+          <Text className="font-inclusiveSans text-lg text-secondary">Upload Image</Text>
         </View>
       </Pressable>
 
-      {/* Text input filed */}
+      {/* Text input field */}
       <View>
         <TextInput
-          style={styles.input}
+          className="h-24 w-72 self-center mt-20 border border-primary rounded-md text-primary font-inclusiveSans text-base p-2 bg-secondary"
           value={inputValue}
-          onChangeText={(text) => setInputValue(text)} // Updates state when input changes
+          onChangeText={setInputValue}
           placeholder="Input text to encrypt..."
-          placeholderTextColor={'#aaa'}
-          multiline={true}
+          placeholderTextColor="#aaa"
+          multiline
           numberOfLines={4}
         />
       </View>
 
-      <Pressable
-        onPress={loading ? () => { } : handleEncrypt}
-      >
-        <View style={styles.verify_btn}>
-          <Text style={{ color: Colors.secondary, fontSize: 20, fontFamily: 'InclusiveSans' }}>{!loading ? 'Encrypt' : <ActivityIndicator size={16} />}</Text>
+      <Pressable onPress={loading ? () => { } : handleEncrypt}>
+        <View className="self-center mt-12 bg-primary p-2 rounded-3xl items-center justify-center w-64 h-14 opacity-1">
+          <Text className="text-secondary text-lg font-inclusiveSans">
+            {!loading ? 'Encrypt' : <ActivityIndicator size={16} />}
+          </Text>
         </View>
       </Pressable>
     </ScreenWrapper>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background
-  },
-  imageUpload: {
-    width: 170,
-    height: 170,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginTop: 50,
-    backgroundColor: Colors.secondary,
-    borderRadius: 5
-  },
-  uploadBtn: {
-    alignSelf: 'center',
-    marginTop: 30,
-    width: 195,
-    height: 47,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.primary,
-    borderRadius: 2,
-  },
-  input: {
-    height: 93,
-    width: 300,
-    alignSelf: 'center',
-    marginTop: 80,
-    borderWidth: 1,
-    borderRadius: 5,
-    borderColor: Colors.primary,
-    fontFamily: 'InclusiveSans',
-    fontSize: 15,
-    padding: 2,
-    color: Colors.primary,
-    backgroundColor: Colors.secondary
-  },
-  output: {
-    fontSize: 20,
-    margin: 12,
-    color: Colors.primary
-  },
-  verify_btn: {
-    alignSelf: 'center',
-    marginTop: 50,
-    backgroundColor: Colors.primary,
-    padding: 5,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center', // Align text in the center of the button
-    width: 254,
-    height: 53,
-    opacity: 1
-  }
-});
 
 export default EncryptTab;
