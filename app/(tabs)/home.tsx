@@ -1,16 +1,15 @@
-import { StyleSheet, Image, Pressable, ScrollView, Animated } from 'react-native';
-
+import { Pressable, Animated, Image } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '@/constants/Colors';
-import { useEffect, useRef, useState } from 'react';
 import { useNavigation } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
+import { ScreenWrapper } from '@/components/ScreenWrapper';;
+import { useRef } from 'react';
+import Colors from '@/constants/Colors';
 
 type RootStackParamList = {
-  encrypt: undefined; // Screen with no params
-  decrypt: undefined; // Screen with no params
-  // Add other routes as needed
+  encrypt: undefined;
+  decrypt: undefined;
+  profile: undefined;
 };
 
 type Props = {
@@ -18,142 +17,90 @@ type Props = {
 };
 
 export default function HomeScreen() {
-  const navigation = useNavigation<Props['navigation']>()
-  // Create refs for animated values
-  const scaleAnim1 = useRef(new Animated.Value(1)).current; // Scale for first button
-  const scaleAnim2 = useRef(new Animated.Value(1)).current; // Scale for second button
-  const shakeAnim = useRef(new Animated.Value(0)).current; // Shake animation
+  const navigation = useNavigation<Props['navigation']>();
+  const scaleAnim1 = useRef(new Animated.Value(1)).current;
+  const scaleAnim2 = useRef(new Animated.Value(1)).current;
 
-
-  // Handle button press in animation for first button
-  const onPressIn1 = () => {
-    Animated.spring(scaleAnim1, {
-      toValue: 0.95, // Scale down on press
+  const handlePressIn = (anim: Animated.Value) => {
+    Animated.spring(anim, {
+      toValue: 0.95,
       useNativeDriver: true,
     }).start();
   };
 
-  const onPressOut1 = () => {
-    Animated.spring(scaleAnim1, {
-      toValue: 1, // Scale back to normal size
+  const handlePressOut = (anim: Animated.Value) => {
+    Animated.spring(anim, {
+      toValue: 1,
       useNativeDriver: true,
     }).start();
   };
-
-  // Handle button press in animation for second button
-  const onPressIn2 = () => {
-    Animated.spring(scaleAnim2, {
-      toValue: 0.95, // Scale down on press
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const onPressOut2 = () => {
-    Animated.spring(scaleAnim2, {
-      toValue: 1, // Scale back to normal size
-      useNativeDriver: true,
-    }).start();
-  };
-
-  // Shaking effect for the lock image
-  useEffect(() => {
-    const shake = () => {
-      shakeAnim.setValue(0); // Reset the animation
-      Animated.timing(shakeAnim, {
-        toValue: 1,
-        duration: 2000,
-        useNativeDriver: true,
-      }).start(() => {
-        // Loop the shaking effect
-        shake(); // Call the shake function again for continuous shaking
-      });
-    };
-
-    shake(); // Start the shaking effect
-
-    // Cleanup function to stop shaking when the component unmounts
-    return () => {
-      shakeAnim.setValue(0);
-    };
-  }, [shakeAnim]);
-
-  // Interpolating the shaking animation to create a shaking effect
-  const shakeInterpolate = shakeAnim.interpolate({
-    inputRange: [0, 3],
-    outputRange: [-15, 15], // Adjust the shaking range (in pixels)
-  });
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {/* Lock button Image */}
-        <Animated.Image source={require('@/assets/images/lock_button.png')} style={[styles.lockBtn, { transform: [{ translateX: shakeInterpolate }] }]} />
-        {/* Welcome Text */}
-        <Text style={styles.welcome}>Welcome back to InvisVault!</Text>
+    <ScreenWrapper styles={{ backgroundColor: Colors.light.background, color: Colors.light.text }}>
 
-        {/* Encypt and Decrypt buttons */}
-        <Pressable
-          onPress={() => navigation.navigate('encrypt')}
-          onPressIn={onPressIn1}
-          onPressOut={onPressOut1}
-        >
-          <Animated.View style={[styles.CTA, { marginVertical: 62, backgroundColor: Colors.secondary, transform: [{ scale: scaleAnim1 }] }]}>
-            <Image source={require('@/assets/images/Encrypt.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.inclusiveSans}>Encrypt Image</Text>
-          </Animated.View>
+      {/* Lock Animation */}
+      <Animated.Image
+        source={require('@/assets/images/lock_button.png')}
+        style={{ width: 160, height: 160, alignSelf: 'center', marginVertical: 24 }}
+      />
+
+      {/* Welcome Text */}
+      <Text className="text-2xl font-bold text-center mb-6 text-gray-800">Welcome back to InvisVault!</Text>
+
+      {/* Encrypt Button */}
+      <Pressable
+        onPress={() => navigation.navigate('encrypt')}
+        onPressIn={() => handlePressIn(scaleAnim1)}
+        onPressOut={() => handlePressOut(scaleAnim1)}
+      >
+        <Animated.View className="flex-row items-center justify-between bg-cyan-200 py-4 px-5 rounded-xl shadow-lg mb-4 w-11/12 m-auto">
+          <Image source={require('@/assets/images/Encrypt.png')} className="w-12 h-12" />
+          <Text className="text-lg font-semibold text-light-text text-center flex-1">Encrypt Image</Text>
+        </Animated.View>
+      </Pressable>
+
+      {/* Decrypt Button */}
+      <Pressable
+        onPress={() => navigation.navigate('decrypt')}
+        onPressIn={() => handlePressIn(scaleAnim2)}
+        onPressOut={() => handlePressOut(scaleAnim2)}
+      >
+        <Animated.View className="flex-row items-center justify-between bg-cyan-600 py-4 px-5 rounded-xl shadow-lg mb-4 w-11/12 m-auto mt-4">
+          <Image source={require('@/assets/images/Unlock.png')} className="w-12 h-12" />
+          <Text className="text-lg font-semibold text-light-text text-center flex-1">Decrypt Image</Text>
+        </Animated.View>
+      </Pressable>
+
+      {/* Recent Activity */}
+      <Text className="text-xl font-semibold text-center text-light-text mt-8">Recent Activity</Text>
+      <View className="bg-light-cardBackground rounded-xl p-4 my-4 shadow-lg w-3/4 m-auto mt-3">
+        <Text className="text-lg text-center text-light-text">No recent activity yet. Start encrypting or decrypting images!</Text>
+      </View>
+
+      {/* Quick Actions */}
+      <Text className="text-xl font-semibold text-center text-light-text mt-8">Quick Actions</Text>
+      <View className="flex-row justify-between my-4 bg-transparent">
+        <Pressable className="flex-1 items-center justify-center bg-cyan-200 py-3 rounded-xl mx-2">
+          <Image source={require('@/assets/images/Profile.png')} className="w-9 h-9 mb-2" />
+          <Text className="text-sm font-medium text-light-text">Profile</Text>
         </Pressable>
-
-        <Pressable
-          onPress={() => navigation.navigate('decrypt')}
-          onPressIn={onPressIn2}
-          onPressOut={onPressOut2}
-        >
-          <Animated.View style={[styles.CTA, { backgroundColor: Colors.accent, transform: [{ scale: scaleAnim2 }] }]}>
-            <Image source={require('@/assets/images/Unlock.png')} style={{ width: 50, height: 50 }} />
-            <Text style={styles.inclusiveSans}>Decrypt Image</Text>
-          </Animated.View>
+        <Pressable className="flex-1 items-center justify-center bg-secondary py-3 rounded-xl mx-2">
+          <Image source={require('@/assets/images/Help.png')} className="w-9 h-9 mb-2" />
+          <Text className="text-sm font-medium text-light-text">Help</Text>
         </Pressable>
+        <Pressable className="flex-1 items-center justify-center bg-accent py-3 rounded-xl mx-2">
+          <Image source={require('@/assets/images/Settings.png')} className="w-9 h-9 mb-2" />
+          <Text className="text-sm font-medium text-light-text">Settings</Text>
+        </Pressable>
+      </View>
 
-        {/* Recent Activity */}
-        <Text style={[styles.inclusiveSans, { marginTop: 60, fontSize: 20 }]}>Recent Activity</Text>
-      </ScrollView>
-    </SafeAreaView>
+      {/* Tips Section */}
+      <Text className="text-xl font-semibold text-center text-light-text mt-8">Tips</Text>
+      <View className="bg-light-cardBackground rounded-xl p-4 shadow-lg w-11/12 m-auto my-5">
+        <Text className="text-lg text-center text-light-text">
+          Did you know? InvisVault secures your data with advanced steganography algorithms!
+        </Text>
+      </View>
+    </ScreenWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.light.background
-  },
-  lockBtn: {
-    width: 177,
-    height: 171,
-    alignSelf: 'center',
-    marginVertical: 24
-  },
-  welcome: {
-    fontFamily: 'InclusiveSans',
-    fontSize: 24,
-    alignSelf: 'center'
-  },
-  CTA: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    alignSelf: 'center',
-    width: '90%',
-    height: 120,
-    borderRadius: 8,
-    marginHorizontal: 16,
-  },
-  CTAHover: {
-    opacity: 0.5,
-    transform: [{ scale: 0.9 }]
-  },
-  inclusiveSans: {
-    fontFamily: 'InclusiveSans',
-    fontSize: 24
-  }
-});

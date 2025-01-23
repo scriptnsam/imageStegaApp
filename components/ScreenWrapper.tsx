@@ -6,11 +6,11 @@ type Props = {
   children: React.ReactNode
 }
 
-export function ScreenWrapper(props: Props) {
+export function ScreenWrapper({ styles, children }: Props) {
   return (
-    <SafeAreaView style={props.styles}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        {props.children}
+    <SafeAreaView style={styles}>
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} >
+        {children}
       </ScrollView>
     </SafeAreaView>
   )

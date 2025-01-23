@@ -9,7 +9,6 @@ import { ScreenWrapper } from '@/components/ScreenWrapper';
 import { useNavigation } from 'expo-router';
 import { NavigationProp } from '@react-navigation/native';
 import useRequest from '@/hooks/useRequest';
-import { BACKEND_URL } from "@env"
 
 type Base64Prop = string | null | undefined
 
@@ -77,7 +76,7 @@ const EncryptTab = () => {
       message: inputValue
     }
 
-    await request(`${BACKEND_URL}/encode`, 'POST', payload)
+    await request(`${process.env.BACKEND_URL}/encode`, 'POST', payload)
 
 
     if (error) {
