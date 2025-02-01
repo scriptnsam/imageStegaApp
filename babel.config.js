@@ -1,9 +1,9 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: ["babel-preset-expo"],
     plugins: [
-      'nativewind/babel', // Keep this if using Nativewind
+      "nativewind/babel", // Keep this if using Nativewind
     ],
   };
 };
