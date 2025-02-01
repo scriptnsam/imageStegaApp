@@ -5,10 +5,16 @@ import Colors from "@/constants/Colors";
 import { authenticate } from "@/components/VerifyFingerPrint";
 import { useNavigation } from "expo-router";
 import { useAppContext } from "@/components/AppContext";
+import { useEffect } from "react";
+import { initializeDatabase } from "@/components/database";
 
 export default function WelcomeScreen() {
   const navigation = useNavigation();
   const { setIsReady } = useAppContext();
+
+  useEffect(() => {
+    initializeDatabase();
+  }, [])
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100 items-center">
