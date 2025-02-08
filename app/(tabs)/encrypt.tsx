@@ -4,6 +4,7 @@ import {
   Pressable,
   TextInput,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { View, Text } from "@/components/Themed";
@@ -100,7 +101,7 @@ const EncryptTab = () => {
         return;
       }
       if (data) {
-        console.log(data.encoded_image_name);
+        console.log('filename:', data.saved_filename);
         // save image to device
         await saveImageToDevice({ encodedImageData: data.encoded_image })
 
@@ -148,8 +149,8 @@ const EncryptTab = () => {
       </Pressable>
 
       <Pressable onPress={handleImageUpload}>
-        <View className="self-center mt-8 w-48 h-12 border border-primary items-center justify-center bg-light-cardBackground rounded-md">
-          <Text className="font-inclusiveSans text-lg text-primary">
+        <View className="self-center mt-8 w-48 h-12 items-center justify-center bg-teal-500 rounded-md">
+          <Text className="font-inclusiveSans text-lg text-white">
             Upload Image
           </Text>
         </View>
@@ -168,16 +169,26 @@ const EncryptTab = () => {
         />
       </View>
 
-      <Pressable
-        className="bg-transparent"
-        onPress={loading ? () => { } : handleEncrypt}
-      >
-        <View className="self-center mt-12 bg-light-cardBackground mb-12 border border-primary p-2 rounded-3xl items-center justify-center w-64 h-14 opacity-1">
-          <Text className="text-primary text-lg font-inclusiveSans">
+
+      {imageBase64 === "" || inputValue === "" ? (
+        <View className="self-center mt-12 bg-teal-500 opacity-70 mb-12 rounded items-center justify-center w-64 h-14 opacity-1">
+          <Text className="text-white text-lg font-inclusiveSans">
             {!loading ? "Encrypt" : <ActivityIndicator size={16} />}
           </Text>
         </View>
-      </Pressable>
+      ) : (
+        <Pressable
+          onPress={loading ? () => { } : handleEncrypt}
+        >
+          <View className="self-center mt-12 bg-teal-500 mb-12 rounded items-center justify-center w-64 h-14 opacity-1">
+            <Text className="text-white text-lg font-inclusiveSans">
+              {!loading ? "Encrypt" : <ActivityIndicator size={16} />}
+            </Text>
+          </View>
+        </Pressable>
+      )}
+
+
     </ScreenWrapper>
   );
 };

@@ -4,12 +4,18 @@ interface ImageRow {
     uri: string;
 }
 
-// Open SQLite database asynchronously
-export const openDatabase = async () => {
+// Open database synchronously
+let db: SQLite.SQLiteDatabase | null = null;
+
+export const openDatabase = () => {
+    if (db) return db; // Prevent multiple openings
+
     try {
-        return await SQLite.openDatabaseAsync('images.db');
+        db = SQLite.openDatabaseSync('images.db'); // Use sync version
+        console.log("✅ Database opened successfully.");
+        return db;
     } catch (error) {
-        console.error('Error opening database:', error);
+        console.error('❌ Error opening database:', error);
         throw error;
     }
 }
@@ -17,8 +23,8 @@ export const openDatabase = async () => {
 // Initialize the database (Create table if it doesn't exist)
 export const initializeDatabase = async () => {
     try {
-        const db = await openDatabase();
-        await db.execAsync(`
+        const db = openDatabase();
+        db.execSync(`
             CREATE TABLE IF NOT EXISTS images (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 uri TEXT,
@@ -31,15 +37,14 @@ export const initializeDatabase = async () => {
     }
 };
 
-export const getSavedImages = async (): Promise<string[]> => {
+export const getSavedImages = (): string[] => {
     try {
-        const db = await openDatabase();
-        const result = await db.getAllAsync<ImageRow>("SELECT uri FROM images;");
-
+        const db = openDatabase();
+        const result = db.getAllSync<ImageRow>("SELECT uri FROM images;");
+        // console.log(result)
         return result.map(row => row.uri);
-
     } catch (error) {
-        console.error('Error fetching images:', error);
-        throw error;
+        console.error("❌ Error fetching images:", error);
+        return [];
     }
 };

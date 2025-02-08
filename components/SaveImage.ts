@@ -26,10 +26,10 @@ const saveImageToDevice = async ({ encodedImageData }: EncodedImageData) => {
         await FileSystem.writeAsStringAsync(fileUri, encodedImageData, { encoding: FileSystem.EncodingType.Base64 });
 
         // open the database and store the file path
-        const db = await openDatabase();
-        await db.runAsync(
-            "INSERT INTO images (uri) VALUES (?)", [fileUri]
-        );
+        const db = openDatabase();
+
+        const stmt = db.prepareSync("INSERT INTO images (uri) VALUES (?);");
+        stmt.executeSync([fileUri]);
 
         console.log("✅ Image saved at:", fileUri);
         return fileUri;

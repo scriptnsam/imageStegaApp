@@ -20,16 +20,31 @@ const useRequest = () => {
    * @param {Method} [method='GET'] - The HTTP method (GET, POST, PUT, etc.).
    * @param {Payload} [payload] - The request body for POST, PUT, PATCH methods.
    * @param {Headers} [headers] - Optional headers for the request.
+   * @param {number} [timeout=10000] - Request timeout in milliseconds.
    * @returns {Promise<void>}
    */
-  const request = async (url: string, method: Method = 'GET', payload?: Payload, headers?: Headers) => {
+  const request = async (
+    url: string,
+    method: Method = 'GET',
+    payload?: Payload,
+    headers?: Headers,
+    timeout: number = 10000
+  ) => {
+    // Reset states before setting loading to ensure clean state
+    setData(null);
+    setError(null);
     setLoading(true);
-    setError(null); // Reset error state on new request
 
     const config: AxiosRequestConfig = {
       url,
       method,
-      headers,
+      timeout,
+      headers: {
+        ...headers,
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
       data: method !== 'GET' ? payload : undefined, // Send payload for non-GET requests
     };
 
