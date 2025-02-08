@@ -53,7 +53,6 @@ const EncryptTab = () => {
     // Wait for the image picker to complete and check the state after setting it
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
       quality: 1,
       base64: true,
     });

@@ -43,7 +43,8 @@
           "photosPermission": "Allow access to your photos.",
           "savePhotosPermission": "Allow saving photos to your gallery."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
