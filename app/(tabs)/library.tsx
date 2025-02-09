@@ -7,16 +7,25 @@ import {
   Image,
   Modal,
   TouchableOpacity,
+  Alert,
 } from "react-native";
-import * as FileSystem from "expo-file-system"; // Import expo-file-system
+import * as FileSystem from "expo-file-system";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import Colors from "@/constants/Colors";
+import axios, { AxiosError } from "axios";
 
 export default function Library() {
   const [images, setImages] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [base64Image, setBase64Image] = useState<string | null>(null);
+  const [theAxiosError, setAxiosError] = useState<{
+    error: boolean, message: string, data?: any
+  }>({
+    error: false,
+    message: "",
+    data: null
+  });
 
   const fetchImages = () => {
     setRefreshing(true);
@@ -24,11 +33,11 @@ export default function Library() {
     setImages(savedImages);
     setRefreshing(false);
   };
+
   useEffect(() => {
     fetchImages();
   }, []);
 
-  // Convert image URI to Base64 using expo-file-system
   const handleImagePress = async (uri: string) => {
     try {
       const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -41,11 +50,72 @@ export default function Library() {
     }
   };
 
+  const decodeMessage = async (base64ImageP: string | null) => {
+    try {
+      if (!base64ImageP) {
+        console.log("base64Image is null");
+        return;
+      }
+      // console.log("base64Image:", base64ImageP);
+      // const res = await handleDecryptImage(base64ImageP);
+      // console.log(res);
+
+      // WRITE THE STEGANOGRAPHY DECODING LOGIC HERE
+      const payload = {
+        image: base64ImageP.trim(),
+      };
+
+      const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/decode`, payload);
+      console.log(response.data);
+
+      if (response.data.success) {
+        Alert.alert('Message Decoded', `"${response.data.decoded_message}"`);
+      } else {
+        setAxiosError({ error: true, message: response.data.error });
+      }
+      return;
+    } catch (error: any) {
+      // console.error("Error decoding message from image:", error);
+      if (axios.isAxiosError(error)) {
+        const axiosError: AxiosError = error;
+        if (axiosError.response) {
+          console.error("Error decoding message from image:", axiosError.response.data);
+          setAxiosError({ data: axiosError.response.data, error: true, message: 'Error occured' });
+        } else {
+          setAxiosError({ error: true, message: axiosError.message });
+          console.error("Error decoding message from image:", axiosError.message);
+        }
+      } else {
+        console.error("Error decoding message from image:", error);
+        setAxiosError({ error: true, message: error.message });
+      }
+    }
+  }
+
+  const axiosErrorfunction = () => {
+    if (theAxiosError.error === true) {
+      if (theAxiosError.data) {
+        alert(theAxiosError.data?.error);
+      } else {
+        alert(theAxiosError.message);
+      }
+      setAxiosError({ error: false, message: "", data: null });
+    }
+  }
+
+  useEffect(() => {
+    axiosErrorfunction()
+  }, [theAxiosError])
+
   return (
     <>
       <ScreenWrapper styles={{ backgroundColor: Colors.light.background }}>
-        <ScreenHeader name="Library" button={{ name: 'Refresh', onPress: () => alert('Pressed!') }} />
-
+        <ScreenHeader name="Library" button={{
+          name: 'Refresh', onPress: () => {
+            setImages([]);
+            fetchImages()
+          }
+        }} />
 
         <View className="flex flex-row flex-wrap">
           {images.map((item, index) => (
@@ -59,25 +129,31 @@ export default function Library() {
           ))}
         </View>
 
-        {/* Modal for displaying selected image and base64 */}
         <Modal
           visible={!!selectedImage}
           transparent={true}
           animationType="slide"
-          onRequestClose={() => setSelectedImage(null)}
+          onRequestClose={() => {
+            setSelectedImage(null);
+            setBase64Image(null);
+          }}
         >
           <View className="flex-1 bg-black/50 justify-center items-center">
             <View className="bg-white p-5 rounded-lg items-center">
               {selectedImage && (
                 <Image source={{ uri: selectedImage }} className="w-48 h-48 rounded-md mb-4" />
               )}
-              {base64Image && (
-                <Text className="text-xs text-gray-500 break-all w-48">
-                  {base64Image.substring(0, 100)}...
-                </Text>
-              )}
               <TouchableOpacity
-                onPress={() => setSelectedImage(null)}
+                onPress={() => base64Image && decodeMessage(base64Image)}
+                className="bg-blue-100 px-4 py-2 rounded-md mt-4"
+              >
+                <Text className="text-blue-500 font-semibold text-base">Decode Message</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedImage(null);
+                  setBase64Image(null);
+                }}
                 className="bg-red-500 px-4 py-2 rounded-md mt-4"
               >
                 <Text className="text-white font-semibold">Close</Text>
@@ -87,7 +163,6 @@ export default function Library() {
         </Modal>
 
       </ScreenWrapper>
-
     </>
   );
 }

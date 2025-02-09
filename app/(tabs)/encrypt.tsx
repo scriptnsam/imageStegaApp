@@ -17,6 +17,7 @@ import { useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 import useRequest from "@/hooks/useRequest";
 import saveImageToDevice from "@/components/SaveImage";
+import axios from "axios";
 
 type Base64Prop = string | null | undefined;
 
@@ -89,6 +90,14 @@ const EncryptTab = () => {
       await request(`${process.env.EXPO_PUBLIC_BACKEND_URL}/encode`, "POST", payload);
 
       if (error) {
+        if (axios.isAxiosError(error)) {
+          const axiosError = error;
+          if (axiosError.response) {
+            console.error("Error encrypting image:", axiosError.response.data);
+          } else {
+            console.error("Error encrypting image:", axiosError.message);
+          }
+        }
         console.log(error);
         Alert.alert("Error", "Something went wrong. Please try again.");
         setIsImagePickerActive(false);
