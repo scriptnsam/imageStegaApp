@@ -58,7 +58,6 @@ export default function DecryptScreen() {
     const payload = {
       image: imageBase64,
     };
-    console.log(payload);
 
     try {
       await request(`${process.env.EXPO_PUBLIC_BACKEND_URL}/decode`, "POST", payload);
