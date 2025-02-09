@@ -8,6 +8,7 @@ import {
   Modal,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as FileSystem from "expo-file-system";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
@@ -28,6 +29,7 @@ export default function Library() {
     message: "",
     data: null
   });
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchImages = () => {
     setRefreshing(true);
@@ -53,6 +55,7 @@ export default function Library() {
   };
 
   const decodeMessage = async (base64ImageP: string | null) => {
+    setLoading(true);
     try {
       if (!base64ImageP) {
         console.log("base64Image is null");
@@ -69,7 +72,7 @@ export default function Library() {
 
       const response = await axios.post(`${process.env.EXPO_PUBLIC_BACKEND_URL}/decode`, payload);
       console.log(response.data);
-
+      setLoading(false);
       if (response.data.success) {
         Alert.alert('Message Decoded', `"${response.data.decoded_message}"`);
       } else {
@@ -77,6 +80,7 @@ export default function Library() {
       }
       return;
     } catch (error: any) {
+      setLoading(false);
       // console.error("Error decoding message from image:", error);
       if (axios.isAxiosError(error)) {
         const axiosError: AxiosError = error;
@@ -101,11 +105,11 @@ export default function Library() {
   }
 
 
-  useEffect(() => {
-    if (images.length > 0) {
-      console.log(images)
-    }
-  }, [images])
+  // useEffect(() => {
+  //   if (images.length > 0) {
+  //     console.log(images)
+  //   }
+  // }, [images])
 
   const axiosErrorfunction = () => {
     if (theAxiosError.error === true) {
@@ -166,7 +170,7 @@ export default function Library() {
                 onPress={() => base64Image && decodeMessage(base64Image)}
                 className="bg-blue-100 px-4 py-2 rounded-md mt-4"
               >
-                <Text className="text-blue-500 font-semibold text-base">Decode Message</Text>
+                <Text className="text-blue-500 font-semibold text-base">{loading ? <ActivityIndicator size={25} /> : 'Decode Message'}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => {
