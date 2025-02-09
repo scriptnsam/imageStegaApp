@@ -17,7 +17,8 @@ import { useNavigation } from "expo-router";
 import { NavigationProp } from "@react-navigation/native";
 import useRequest from "@/hooks/useRequest";
 import saveImageToDevice from "@/components/SaveImage";
-import axios from "axios";
+import axios, { AxiosError } from "axios";
+import * as ImageManipulator from 'expo-image-manipulator'
 
 type Base64Prop = string | null | undefined;
 
@@ -41,40 +42,62 @@ const EncryptTab = () => {
   const navigation = useNavigation<Props["navigation"]>();
 
   const handleImageUpload = async () => {
-    const permissionResult =
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
       Alert.alert("Permission to access camera roll is required!");
       return;
     }
 
-    // Set image picker active before picking image
     setIsImagePickerActive(true);
 
-    // Wait for the image picker to complete and check the state after setting it
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 1,
-      base64: true,
+      base64: false, // Base64 will be generated after conversion
     });
 
-    // If image is selected, update the selected image and base64 data
     if (!result.canceled) {
-      setImageBase64(result.assets[0].base64);
-      setSelectedImage(result.assets[0].uri);
+      try {
+        // Convert image to PNG using ImageManipulator
+        // Get file extension from URI
+        const fileExtension = result.assets[0].uri.split('.').pop()?.toLowerCase();
+
+        // Only convert if not already PNG
+        if (fileExtension !== 'png') {
+          // Convert image to PNG using ImageManipulator
+          const manipResult = await ImageManipulator.manipulateAsync(
+            result.assets[0].uri,
+            [], // no transformations needed
+            { format: ImageManipulator.SaveFormat.PNG, base64: true }
+          );
+          setImageBase64(manipResult.base64); // Store base64-encoded PNG
+          setSelectedImage(manipResult.uri); // Store converted image URI
+        } else {
+          const manipResult = {
+            uri: result.assets[0].uri,
+            base64: result.assets[0].base64
+          }
+          setImageBase64(manipResult.base64); // Store base64-encoded PNG
+          setSelectedImage(manipResult.uri); // Store converted image URI
+        }
+
+      } catch (error) {
+        console.error("Error converting image to PNG:", error);
+        Alert.alert("Error", "Could not process the image. Try again.");
+      }
     } else {
-      // If the picker was cancelled, make sure the authentication doesn't trigger
-      console.log(
-        "Image picker was cancelled, authentication will not trigger."
-      );
+      console.log("Image picker was cancelled.");
     }
   };
+
 
   useEffect(() => {
     console.log(isImagePickerActive);
   }, [isImagePickerActive]);
 
   const handleEncrypt = async () => {
+    setIsImagePickerActive(false);
+
     if (imageBase64 === "" || inputValue === "") {
       Alert.alert("Error", "Please select an image and enter a message.");
       setIsImagePickerActive(false);
@@ -111,7 +134,9 @@ const EncryptTab = () => {
       if (data) {
         console.log('filename:', data.saved_filename);
         // save image to device
-        await saveImageToDevice({ encodedImageData: data.encoded_image })
+        await saveImageToDevice({ encodedImageData: data.encoded_image });
+        setImageBase64("");
+        setInputValue("");
 
         Alert.alert(
           "Encryption successful!",
@@ -130,9 +155,16 @@ const EncryptTab = () => {
         );
       }
 
-      setIsImagePickerActive(false);
     } catch (error) {
       console.error("Error during encryption:", error);
+      if (axios.isAxiosError(error)) {
+        const axiosError: AxiosError = error;
+        if (axiosError.response) {
+          console.error("Error encrypting image:", axiosError.response.data);
+        } else {
+          console.error("Error encrypting image:", axiosError.message);
+        }
+      }
       setIsImagePickerActive(false);
     }
   };

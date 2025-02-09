@@ -13,11 +13,13 @@ import * as FileSystem from "expo-file-system";
 import { ScreenWrapper } from "@/components/ScreenWrapper";
 import Colors from "@/constants/Colors";
 import axios, { AxiosError } from "axios";
+import deleteImagePermanently from "@/components/DeleteImage";
 
 export default function Library() {
   const [images, setImages] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [showDelete, setShowDelete] = useState<boolean>(false);
   const [base64Image, setBase64Image] = useState<string | null>(null);
   const [theAxiosError, setAxiosError] = useState<{
     error: boolean, message: string, data?: any
@@ -92,6 +94,19 @@ export default function Library() {
     }
   }
 
+  const deleteImage = async (imageUri: string, images: string[], setImages: (arr: string[]) => void) => {
+    await deleteImagePermanently(imageUri, images, setImages)
+    setSelectedImage(null)
+    setShowDelete(false)
+  }
+
+
+  useEffect(() => {
+    if (images.length > 0) {
+      console.log(images)
+    }
+  }, [images])
+
   const axiosErrorfunction = () => {
     if (theAxiosError.error === true) {
       if (theAxiosError.data) {
@@ -122,6 +137,10 @@ export default function Library() {
             <TouchableOpacity
               key={index}
               onPress={() => handleImagePress(item)}
+              onLongPress={() => {
+                setSelectedImage(item)
+                setShowDelete(true)
+              }}
               className="p-1"
             >
               <Image source={{ uri: item }} className="w-24 h-24 rounded-md" />
@@ -157,6 +176,29 @@ export default function Library() {
                 className="bg-red-500 px-4 py-2 rounded-md mt-4"
               >
                 <Text className="text-white font-semibold">Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        {/* modal to pop up the delete button */}
+        <Modal
+          visible={showDelete}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setShowDelete(false)}
+        >
+          <View className="flex-1 bg-black/50 justify-center items-center">
+            <View className="bg-white p-5 rounded-lg items-center">
+              <TouchableOpacity
+                onPress={() => {
+                  if (selectedImage) {
+                    deleteImage(selectedImage, images, setImages);
+                  }
+                }}
+                className="bg-red-500 px-4 py-2 rounded-md mt-4"
+              >
+                <Text className="text-white font-semibold">Delete</Text>
               </TouchableOpacity>
             </View>
           </View>

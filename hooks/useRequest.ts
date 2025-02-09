@@ -20,7 +20,7 @@ const useRequest = () => {
    * @param {Method} [method='GET'] - The HTTP method (GET, POST, PUT, etc.).
    * @param {Payload} [payload] - The request body for POST, PUT, PATCH methods.
    * @param {Headers} [headers] - Optional headers for the request.
-   * @param {number} [timeout=10000] - Request timeout in milliseconds.
+   * @param {number} [timeout=30000] - Request timeout in milliseconds.
    * @returns {Promise<void>}
    */
   const request = async (
@@ -28,7 +28,7 @@ const useRequest = () => {
     method: Method = 'GET',
     payload?: Payload,
     headers?: Headers,
-    timeout: number = 10000
+    timeout: number = 30000
   ) => {
     // Reset states before setting loading to ensure clean state
     setData(null);
